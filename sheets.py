@@ -152,6 +152,6 @@ def batch_update():
     worksheet.batch_update(get_formatted_media_details(), value_input_option="USER_ENTERED")
     
 def clear_all():
+    if worksheet.acell(f'Z{OFFSET}').value == '': 
+        return
     worksheet.batch_clear([f'A{OFFSET}:Z{ROW_MAX}'])    
-
-batch_update()    
