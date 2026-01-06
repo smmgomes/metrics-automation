@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import gspread
 from dotenv import load_dotenv
@@ -171,7 +171,7 @@ def get_formatted_media_details() -> list[dict]:
         })
     result.append({
         'range': 'Z' + str(OFFSET),
-        'values': [[pretty_date(datetime.today())]]
+        'values': [[pretty_date(datetime.today() - timedelta(hours=5))]]
     })    
     return result
 
