@@ -1,5 +1,6 @@
 venv/
 
+*.swp
 service_account.json
 .env
 __pycache__
