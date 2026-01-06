@@ -41,7 +41,7 @@ OFFSET = 5
 ROW_MAX = 120
 
 def get_post_recency(timestamp: datetime) -> str | None:
-    difference = (datetime.today()-timestamp).days
+    difference = ((datetime.today() - timedelta(hours=5))-timestamp).days
     if 7 <= difference <= 13:
          return 'week1'
     elif 14 <= difference <= 24:
@@ -186,7 +186,7 @@ def batch_update():
         print(f"error: Failed to read last run cell Z{OFFSET}: {e}")
         last_run = None
 
-    if last_run == pretty_date(datetime.today()):
+    if last_run == pretty_date(datetime.today() - timedelta(hours=5)):
         print("ETL already ran today; skipping batch_update")
         return
     

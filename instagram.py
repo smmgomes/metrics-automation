@@ -27,7 +27,7 @@ def est_to_utc(dt: datetime):
     return dt + timedelta(hours=5)
 
 def forty_day_limit():
-    return int((est_to_utc(datetime.today()) - timedelta(days=DATE_OFFSET)).timestamp())
+    return int((datetime.today() - timedelta(days=DATE_OFFSET)).timestamp())
 
 def shorten_caption(caption: str):
     
