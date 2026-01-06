@@ -8,13 +8,34 @@ from dotenv import load_dotenv
 import instagram as ig
 
 load_dotenv()
-raw_json = os.getenv("GOOGLE_CREDS_JSON")
-google_creds_dict = json.loads(raw_json)
-gc = gspread.service_account_from_dict(google_creds_dict)
-worksheet_key = os.getenv("WORKSHEET_ID")
-sh = gc.open_by_key(worksheet_key)
-worksheet_name = os.getenv("WORKSHEET_NAME")
-worksheet = sh.worksheet(worksheet_name)
+
+try:
+    raw_json = os.getenv("GOOGLE_CREDS_JSON")
+    if not raw_json:
+        raise Exception("Missing GOOGLE_CREDS_JSON env var")
+
+    try:
+        google_creds_dict = json.loads(raw_json)
+    except Exception:
+        raise Exception("GOOGLE_CREDS_JSON is not valid JSON")
+
+    worksheet_key = os.getenv("WORKSHEET_ID")
+    if not worksheet_key:
+        raise Exception("Missing WORKSHEET_ID env var")
+
+    worksheet_name = os.getenv("WORKSHEET_NAME")
+    if not worksheet_name:
+        raise Exception("Missing WORKSHEET_NAME env var")
+
+    gc = gspread.service_account_from_dict(google_creds_dict)
+    sh = gc.open_by_key(worksheet_key)
+    worksheet = sh.worksheet(worksheet_name)
+
+    print("INFO: Google Sheets connection initialized successfully")
+
+except Exception as e:
+    print(f"error: Failed to initialize Google Sheets client: {e}")
+    worksheet = None
 
 OFFSET = 5
 ROW_MAX = 120
@@ -44,7 +65,11 @@ def get_post_column_bucket(index: int, recency: str) -> str | None:
         return None   
     
 def get_all_gs_values() -> (dict | list):
-    all_values = worksheet.get_all_values(value_render_option='FORMULA')[OFFSET-1:] 
+    try: 
+        all_values = worksheet.get_all_values(value_render_option='FORMULA')[OFFSET-1:] 
+    except Exception as e:
+        print(f"error: worksheet.get_all_values failed: {e}")
+        return ({}, [])
     followers = []
     result = {}
     for rows in all_values:
@@ -68,9 +93,13 @@ def check_if_existing_id(id: str, all_values: dict) -> bool:
 
 def get_archived_ids(gs_rows: dict, ig_rows: set) -> list:
     return [mid for mid in gs_rows.keys() if mid not in ig_rows]
+
 def get_formatted_media_details() -> list[dict]:
+    ig_response = ig.get_all_media_data()
+    if ig_response is None:
+        return
+    posts, follower = ig_response
     all_values, followers = get_all_gs_values()
-    posts, follower = ig.get_all_media_data()
     followers=[follower]+followers
     archived_ids = get_archived_ids(all_values, {ids["id"] for ids in posts})
     result = []
@@ -147,11 +176,46 @@ def get_formatted_media_details() -> list[dict]:
     return result
 
 def batch_update():
-    if worksheet.acell(f'Z{OFFSET}').value == pretty_date(datetime.today()):
+    if worksheet is None:
+        print("error: Worksheet is not initialized; batch_update aborted")
         return
-    worksheet.batch_update(get_formatted_media_details(), value_input_option="USER_ENTERED")
+    
+    try:
+        last_run = worksheet.acell(f"Z{OFFSET}").value
+    except Exception as e:
+        print(f"error: Failed to read last run cell Z{OFFSET}: {e}")
+        last_run = None
+
+    if last_run == pretty_date(datetime.today()):
+        print("ETL already ran today; skipping batch_update")
+        return
+    
+    update_response = get_formatted_media_details()
+    if update_response is None:
+        print("No update payload produced; skipping batch_update")
+        return
+    try:
+        worksheet.batch_update(update_response, value_input_option="USER_ENTERED")
+        print(f"info: Sheet batch_update succeeded with {len(update_response)} updates")
+    except Exception as e:
+        print(f"error: worksheet.batch_update failed: {e}")
     
 def clear_all():
-    if worksheet.acell(f'Z{OFFSET}').value == '': 
+    if worksheet is None:
+        print("error: Worksheet is not initialized; clear_all aborted")
         return
-    worksheet.batch_clear([f'A{OFFSET}:Z{ROW_MAX}'])    
+    
+    try:
+        last_run = worksheet.acell(f"Z{OFFSET}").value
+    except Exception as e:
+        print(f"Failed to read last run cell Z{OFFSET}: {e}")
+        last_run = None
+
+    if last_run == "":
+        print("Sheet appears empty, skipping clear_all")
+        return
+    try:
+        worksheet.batch_clear([f"A{OFFSET}:Z{ROW_MAX}"])
+        print(f"Sheet cleared range A{OFFSET}:Z{ROW_MAX}")
+    except Exception as e:
+        print(f"worksheet.batch_clear failed: {e}")    

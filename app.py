@@ -11,7 +11,8 @@ def run_etl():
         sh.batch_update()
         return jsonify({"status": "success", "message": "Script executed successfully"}), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f"ETL failed: {e}")
+        return {"status": "error", "message": f"ETL failed: {str(e)}"}, 500
 
 @app.route("/clear-sheet", methods=['POST'])
 def clear_sheet():
@@ -19,7 +20,7 @@ def clear_sheet():
         sh.clear_all()
         return jsonify({"status": "success", "message": "Script executed successfully"}), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": f"Clear sheet failed: {str(e)}"}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
