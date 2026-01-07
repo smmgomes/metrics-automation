@@ -44,7 +44,7 @@ def get_post_recency(timestamp: datetime) -> str | None:
     difference = ((datetime.today() - timedelta(hours=5))-timestamp).days
     if 7 <= difference <= 13:
          return 'week1'
-    elif 14 <= difference <= 29:
+    elif 14 <= difference <= 24:
         return 'week2'
     elif 30 <= difference <= 40:
         return 'month'
@@ -95,7 +95,7 @@ def get_archived_ids(gs_rows: dict, ig_rows: set) -> list:
     return [mid for mid in gs_rows.keys() if mid not in ig_rows]
 
 def get_formatted_media_details() -> list[dict]:
-    ig_response = ([{'id': '17925179268051257', 'metrics': {'comments': 0, 'likes': 45, 'reach': 1303, 'shares': 1, 'total_interactions': 47, 'views': 2575}, 'timestamp': datetime(2025, 12, 23, 0, 0), 'identifier': ('https://www.instagram.com/reel/DSnkGxqDw4r/', 'Holiday sounds cozy sweaters and')}, {'id': '18107389075572406', 'metrics': {'comments': 0, 'likes': 47, 'reach': 1273, 'shares': 4, 'total_interactions': 62, 'views': 2504}, 'timestamp': datetime(2025, 12, 18, 0, 0), 'identifier': ('https://www.instagram.com/reel/DSaXop3jdYS/', 'Have you ever wished you')}, {'id': '18093569317733586', 'metrics': {'comments': 0, 'follows': 0, 'likes': 20, 'reach': 1140, 'shares': 9, 'total_interactions': 43, 'views': 3366}, 'timestamp': datetime(2025, 12, 12, 0, 0), 'identifier': ('https://www.instagram.com/p/DSLPSZZj6PQ/', 'Curiosity becomes possibility and this')}, {'id': '18110871196547164', 'metrics': {'comments': 1, 'follows': 44, 'likes': 284, 'reach': 8794, 'shares': 271, 'total_interactions': 801, 'views': 34937}, 'timestamp': datetime(2025, 12, 11, 0, 0), 'identifier': ('https://www.instagram.com/p/DSIdXYakaeX/', ' HEY TMU STUDENTS! Are')}, {'id': '17866985097509233', 'metrics': {'comments': 1, 'likes': 72, 'reach': 1668, 'shares': 5, 'total_interactions': 86, 'views': 3757}, 'timestamp': datetime(2025, 12, 10, 0, 0), 'identifier': ('https://www.instagram.com/reel/DSGgoe8Ddk3/', 'Welcome to Student Life and')}, {'id': '18087807743073927', 'metrics': {'comments': 0, 'follows': 0, 'likes': 47, 'reach': 1588, 'shares': 8, 'total_interactions': 74, 'views': 5428}, 'timestamp': datetime(2025, 12, 10, 0, 0), 'identifier': ('https://www.instagram.com/p/DSF6o_gDyEy/', 'Welcome to Wonder! A student')}, {'id': '18071719250199458', 'metrics': {'comments': 8, 'likes': 150, 'reach': 3269, 'shares': 150, 'total_interactions': 323, 'views': 6620}, 'timestamp': datetime(2025, 11, 27, 0, 0), 'identifier': ('https://www.instagram.com/reel/DRk2LCMD1hP/', 'Come grab an Exam Care')}], 5048)
+    ig_response = ig.get_all_media_data()
     if ig_response is None:
         return
     posts, follower = ig_response
