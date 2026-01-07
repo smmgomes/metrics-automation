@@ -44,7 +44,7 @@ def get_post_recency(timestamp: datetime) -> str | None:
     difference = ((datetime.today() - timedelta(hours=5))-timestamp).days
     if 7 <= difference <= 13:
          return 'week1'
-    elif 14 <= difference <= 24:
+    elif 14 <= difference <= 29:
         return 'week2'
     elif 30 <= difference <= 40:
         return 'month'
