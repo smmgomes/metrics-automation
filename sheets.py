@@ -30,7 +30,6 @@ try:
     gc = gspread.service_account_from_dict(google_creds_dict)
     sh = gc.open_by_key(worksheet_key)
     worksheet = sh.worksheet(worksheet_name)
-    print(worksheet.get_all_values())
     print("INFO: Google Sheets connection initialized successfully")
 
 except Exception as e:
@@ -41,7 +40,7 @@ OFFSET = 5
 ROW_MAX = 120
 
 def get_post_recency(timestamp: datetime) -> str | None:
-    difference = ((datetime.today() - timedelta(hours=5))-timestamp).days
+    difference = (datetime.today().astimezone(timezone.utc)-timestamp).days
     if 7 <= difference <= 13:
          return 'week1'
     elif 14 <= difference <= 29:
@@ -174,7 +173,7 @@ def get_formatted_media_details() -> list[dict]:
         })
     result.append({
         'range': 'Z' + str(OFFSET),
-        'values': [[pretty_date(datetime.today() - timedelta(hours=5))]]
+        'values': [[pretty_date(datetime.today().astimezone(timezone.utc) - timedelta(hours=5))]]
     })    
     return result
 
@@ -189,7 +188,7 @@ def batch_update():
         print(f"error: Failed to read last run cell Z{OFFSET}: {e}")
         last_run = None
 
-    if last_run == pretty_date(datetime.today() - timedelta(hours=5)):
+    if last_run == pretty_date(datetime.today().astimezone(timezone.utc) - timedelta(hours=5)):
         print("ETL already ran today; skipping batch_update")
         return
     
@@ -222,3 +221,5 @@ def clear_all():
         print(f"Sheet cleared range A{OFFSET}:Z{ROW_MAX}")
     except Exception as e:
         print(f"worksheet.batch_clear failed: {e}")    
+        
+batch_update()

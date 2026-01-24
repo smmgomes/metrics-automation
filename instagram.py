@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import demoji
 import requests
@@ -19,15 +19,15 @@ except Exception as e:
 
 DATE_OFFSET = 40
 
-def utc_to_est(iso_date: str) -> datetime:
-    local_convertion: datetime = datetime.fromisoformat(iso_date).astimezone(None)
-    return datetime(local_convertion.year, local_convertion.month, local_convertion.day)
+def iso_to_datetime(iso_date: str) -> datetime:
+    local_convertion: datetime = datetime.fromisoformat(iso_date)
+    return datetime(local_convertion.year, local_convertion.month, local_convertion.day).astimezone(timezone.utc)
 
 def est_to_utc(dt: datetime):
     return dt + timedelta(hours=5)
 
 def forty_day_limit():
-    return int((datetime.today() - timedelta(days=DATE_OFFSET)).timestamp())
+    return int((datetime.today().astimezone(timezone.utc) - timedelta(days=DATE_OFFSET)).timestamp())
 
 def shorten_caption(caption: str):
     
@@ -48,7 +48,7 @@ def get_all_media_data() -> (dict | int):
             result.append({
                 "id": media["id"],
                 "metrics": {insight["name"]: insight["values"][0]["value"] for insight in media["insights"]["data"]},
-                "timestamp": utc_to_est(media["timestamp"]),
+                "timestamp": iso_to_datetime(media["timestamp"]),
                 "identifier":(media["permalink"], shorten_caption(media["caption"] if "caption" in media else ""))
             })
         return (result, media_url_obj["followers_count"])
