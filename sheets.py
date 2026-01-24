@@ -222,5 +222,3 @@ def clear_all():
         print(f"Sheet cleared range A{OFFSET}:Z{ROW_MAX}")
     except Exception as e:
         print(f"worksheet.batch_clear failed: {e}")    
-        
-print(batch_update())
