@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import gspread
 from dotenv import load_dotenv
@@ -30,11 +30,11 @@ try:
     gc = gspread.service_account_from_dict(google_creds_dict)
     sh = gc.open_by_key(worksheet_key)
     worksheet = sh.worksheet(worksheet_name)
-
+    print(worksheet.get_all_values())
     print("INFO: Google Sheets connection initialized successfully")
 
 except Exception as e:
-    print(f"error: Failed to initialize Google Sheets client: {e}")
+    print(f"error: Failed to initialize Google Sheets client: {str(e)}")
     worksheet = None
 
 OFFSET = 5
@@ -53,6 +53,9 @@ def get_post_recency(timestamp: datetime) -> str | None:
   
 def pretty_date(date: datetime) -> str:
     return str(date.year) + "/" + str(date.month) + "/" + str(date.day) 
+
+def google_serial_to_date(serial: str) -> datetime:
+    return datetime(1899, 12, 30)+timedelta(days=int(serial))
 
 def get_post_column_bucket(index: int, recency: str) -> str | None:
     if recency == 'week1':
@@ -145,7 +148,7 @@ def get_formatted_media_details() -> list[dict]:
         metadata_range = 'A' + str(index+OFFSET) + ':' + 'C' + str(index+OFFSET)
         result.append({
             'range': metadata_range,
-            'values': [[mid, all_values[mid]["date"], all_values[mid]["title"]]]
+            'values': [[mid, pretty_date(google_serial_to_date(all_values[mid]["date"])), all_values[mid]["title"]]]
         })
         if "week1" in all_values[mid]:
             result.append({
@@ -219,3 +222,5 @@ def clear_all():
         print(f"Sheet cleared range A{OFFSET}:Z{ROW_MAX}")
     except Exception as e:
         print(f"worksheet.batch_clear failed: {e}")    
+        
+print(batch_update())
