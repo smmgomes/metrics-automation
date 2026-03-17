@@ -128,10 +128,10 @@ requests-oauthlib@2.0.0
 Flask application that exposes HTTP endpoints.
 
 Endpoints:
-- POST /run-etl  
+- POST /run-etl
   Triggers the ETL process and updates the Google Sheet
 
-- POST /clear-sheet  
+- POST /clear-sheet
   Clears the data range in the Google Sheet
 
 Uses:
@@ -212,7 +212,7 @@ Additional columns:
 
 Example `.env` file:
 
-```
+```.env
 ACCESS_TOKEN=your_instagram_access_token
 USER_ID=your_instagram_user_id
 
@@ -222,7 +222,7 @@ WORKSHEET_NAME=your_sheet_tab_name
 ```
 
 Notes:
-- GOOGLE_CREDS_JSON must be valid JSON text
+- GOOGLE_CREDS_JSON must be valid minified JSON text
 - The Google Sheet must be shared with the service account email
 
 ---
